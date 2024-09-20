@@ -119,7 +119,7 @@ export class StorageS3WithPresignedURLs extends StorageProviderBase {
   }
 
   async sync(master: StorageProviderBase): Promise<boolean> {
-    if (master instanceof S3PresignedUrlStorage) {
+    if (master instanceof StorageS3WithPresignedURLs) {
       return Promise.resolve(false);
     }
 
