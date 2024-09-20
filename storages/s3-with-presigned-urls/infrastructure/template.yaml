@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AWS SAM template for a custom storage solution that uses AWS S3 with pre-signed URLs to upload, retrieve, and delete files
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: nodejs20.x
+    MemorySize: 128
+
+Resources:
+  # API
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "${AWS::StackName}-api"
+      StageName: "Prod"
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+        MaxAge: "'3000'"
+
+  # Lambdas
+  GetPresignedUrlForUploadingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./lambdas/customStorageFunctions
+      Handler: index.getPresignedUrlForUploading
+      Environment:
+        Variables:
+          STORAGE_BUCKET: !Ref StorageBucket
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /upload
+            Method: GET
+            RestApiId: !Ref Api
+  GetPresignedUrlForRetreivingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./lambdas/customStorageFunctions
+      Handler: index.getPresignedUrlForRetreiving
+      Environment:
+        Variables:
+          STORAGE_BUCKET: !Ref StorageBucket
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /retreive
+            Method: GET
+            RestApiId: !Ref Api
+  DeleteFileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./lambdas/customStorageFunctions
+      Handler: index.deleteFile
+      Environment:
+        Variables:
+          STORAGE_BUCKET: !Ref StorageBucket
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /delete
+            Method: DELETE
+            RestApiId: !Ref Api
+  ListFilesHashesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./lambdas/customStorageFunctions
+      Handler: index.listFilesHashes
+      Environment:
+        Variables:
+          STORAGE_BUCKET: !Ref StorageBucket
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /list
+            Method: GET
+            RestApiId: !Ref Api
+  # Policies
+  StorageBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StorageBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action:
+              - "s3:PutObject"
+              - "s3:GetObject"
+              - "s3:DeleteObject"
+            Resource: !Sub "arn:aws:s3:::${StorageBucket}/*"
+          - Effect: Allow
+            Principal: "*"
+            Action:
+              - "s3:ListBucket"
+            Resource: !Sub "arn:aws:s3:::${StorageBucket}"
+            Condition:
+              StringLike:
+                s3:prefix:
+                  - "*/*"
+  # Buckets
+  StorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-upload-bucket"
+      PublicAccessBlockConfiguration:
+        BlockPublicPolicy: false
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - "*"
+            AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+            MaxAge: 3000
+
+Outputs:
+  ApiUrl:
+    Description: "API endpoint base URL"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+
+  BucketName:
+    Description: "S3 bucket for storing uploaded files"
+    Value: !Ref StorageBucket
