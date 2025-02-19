@@ -1,0 +1,83 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+</head>
+
+<body>
+  Add file
+  <input id="upload" type="file" />
+
+  <script>
+    function fileToArrayBuffer(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+      });
+    }
+
+    async function handleFileUpload(event) {
+      const file = event.target.files[0];
+
+      if (file == null) {
+        return;
+      }
+
+      const arrayBuffer = await fileToArrayBuffer(file);
+
+      const mimeType = encodeURIComponent(file.type);
+      const filename = encodeURIComponent(file.name);
+
+      const transcodeJob = await fetch(
+        `https://localhost:3000/transcode?mimeType=${mimeType}&filename=${filename}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/octet-stream" },
+          body: arrayBuffer,
+        }
+      ).then((res) => res.json());
+
+      console.log({ transcodeJob });
+
+      const jobResult = await checkJobStatus(transcodeJob.jobId);
+      console.log({ jobResult });
+    }
+
+    function checkJobStatus(jobId) {
+      console.log("Checking job status...");
+
+      return new Promise(async (resolve, reject) => {
+        try {
+          const jobResponse = await fetch(
+            `https://localhost:3000/status/${jobId}`
+          ).then((res) => res.json());
+
+          if (jobResponse.status === "processing") {
+            console.log("Job is still processing...", jobResponse.progress);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            return resolve(checkJobStatus(jobId));
+          } else if (jobResponse.status === "completed") {
+            console.log("Job completed!");
+            resolve(jobResponse);
+          } else {
+            console.log("Job failed!");
+            reject(jobResponse);
+          }
+        } catch (error) {
+          console.error("Error checking job status:", error);
+          reject(error);
+        }
+      });
+    }
+
+    const upload = document.getElementById("upload");
+    upload.addEventListener("change", handleFileUpload);
+  </script>
+</body>
+
+</html>

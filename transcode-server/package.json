@@ -1,0 +1,21 @@
+{
+  "name": "server-transcribe",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "nodemon --watch src/index.js",
+    "start:web": "live-server ./www/index.html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "5.0.1"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "nodemon": "3.1.9"
+  }
+}
