@@ -6,7 +6,7 @@ import {
   TranscodeSupportType,
   ITranscodeProvider,
   TranscodeResult,
-} from "../ITranscodeProvider";
+} from "@rendley/sdk";
 
 export class TranscodeServer implements ITranscodeProvider {
   init(): Promise<void> {
