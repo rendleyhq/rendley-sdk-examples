@@ -6,4 +6,6 @@ This repository hosts a collection of examples demonstrating custom features for
 
 ### Storage
 
-- [S3 with Pre-signed URLs](https://github.com/rendleyhq/rendley-sdk-examples/storages/s3-with-presigned-urls)
+- [AWS S3 with Pre-signed URLs](https://github.com/rendleyhq/rendley-sdk-examples/tree/main/storages/s3-with-presigned-urls)
+
+- [Local IndexedDB](https://github.com/rendleyhq/rendley-sdk-examples/tree/main/storages/IndexedDB)
