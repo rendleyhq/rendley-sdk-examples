@@ -8,6 +8,6 @@ For more detailed information, check out our [storage system documentation](http
 
 ### Available Implementations:
 
-- [AWS S3 with Pre-signed URLs](https://github.com/rendleyhq/rendley-sdk-examples/storages/s3-with-presigned-urls)
+- [AWS S3 with Pre-signed URLs](https://github.com/rendleyhq/rendley-sdk-examples/tree/main/storages/s3-with-presigned-urls)
 
-- [Local IndexedDB](https://github.com/rendleyhq/rendley-sdk-examples/storages/IndexedDB)
+- [Local IndexedDB](https://github.com/rendleyhq/rendley-sdk-examples/tree/main/storages/IndexedDB)
